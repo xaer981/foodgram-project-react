@@ -1,0 +1,3 @@
+STANDART_MAX_LENGTH = 200
+HEX_COLOR_REGEX = '^#([0-9a-f]{6}|[0-9a-f]{3})$'
+TEXT_LENGTH = 20
