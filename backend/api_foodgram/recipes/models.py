@@ -29,7 +29,9 @@ class Tag(NameOrderingStr):
     slug.
     """
     color = models.CharField(unique=True,
-                             validators=[RegexValidator(HEX_COLOR_REGEX)],
+                             validators=[RegexValidator(
+                                 HEX_COLOR_REGEX,
+                                 'Введите верное значение HEX-кода')],
                              verbose_name='цвет')
     slug = models.SlugField(max_length=STANDART_MAX_LENGTH,
                             unique=True)
@@ -98,6 +100,12 @@ class Recipe(NameOrderingStr):
 
 
 class RecipeIngredient(models.Model):
+    """
+    Промежуточная модель для связи рецептов и ингредиентов.
+    Имеет поле recipe(связь с моделью Recipe),
+    ingredient(связь с моделью ingredient),
+    amount(количество ингредиента для рецепта).
+    """
     recipe = models.ForeignKey(Recipe,
                                on_delete=models.CASCADE)
     ingredient = models.ForeignKey(Ingredient,
@@ -114,12 +122,18 @@ class RecipeIngredient(models.Model):
 
     def __str__(self):
 
-        return (f'{self.recipe} - {self.ingredient} '
+        return (f'{self.recipe.name[:TEXT_LENGTH]} '
+                f'- {self.ingredient.name[:TEXT_LENGTH]} '
                 f'в количестве {self.amount} '
-                f'{self.ingredient.measurement_unit}')
+                f'{self.ingredient.measurement_unit.name}')
 
 
 class RecipeTag(models.Model):
+    """
+    Промежуточная модель для связи рецептов и тэгов.
+    Имеет поле recipe(связь с моделью Recipe),
+    tag(связь с моделью Tag).
+    """
     recipe = models.ForeignKey(Recipe,
                                on_delete=models.CASCADE)
     tag = models.ForeignKey(Tag,
@@ -133,4 +147,4 @@ class RecipeTag(models.Model):
 
     def __str__(self):
 
-        return f'{self.recipe} - {self.tag}'
+        return f'{self.recipe.name[:TEXT_LENGTH]} - {self.tag.name}'
