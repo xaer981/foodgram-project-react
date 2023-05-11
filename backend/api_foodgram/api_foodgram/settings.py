@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'api.apps.ApiConfig',
+    'core.apps.CoreConfig',
     'recipes.apps.RecipesConfig',
 ]
 
@@ -84,6 +85,11 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
+REST_FRAMEWORK = {
+    'PAGE_SIZE': 6,
+}
 
 
 LANGUAGE_CODE = 'ru-RU'

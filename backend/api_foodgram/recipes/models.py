@@ -2,24 +2,7 @@ from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
 from .constants import HEX_COLOR_REGEX, STANDART_MAX_LENGTH, TEXT_LENGTH
-
-
-class NameOrderingStr(models.Model):
-    """
-    Абстрактная модель с полем name,
-    сортировкой по этому полю и возвратом этого поля при вызове str.
-    """
-    name = models.CharField(max_length=STANDART_MAX_LENGTH,
-                            unique=True,
-                            verbose_name='название')
-
-    class Meta:
-        abstract = True
-        ordering = ('name',)
-
-    def __str__(self):
-
-        return self.name[:TEXT_LENGTH]
+from core.models import NameOrderingStr
 
 
 class Tag(NameOrderingStr):
@@ -107,9 +90,11 @@ class RecipeIngredient(models.Model):
     amount(количество ингредиента для рецепта).
     """
     recipe = models.ForeignKey(Recipe,
-                               on_delete=models.CASCADE)
+                               on_delete=models.CASCADE,
+                               verbose_name='рецепт')
     ingredient = models.ForeignKey(Ingredient,
-                                   on_delete=models.CASCADE)
+                                   on_delete=models.CASCADE,
+                                   verbose_name='ингредиент')
     amount = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1)],
         verbose_name='количество ингредиента')

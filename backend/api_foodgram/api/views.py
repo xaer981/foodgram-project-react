@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 
-from .serializers import (IngredientSerializer, RecipeGETSerializer,
-                          RecipeSerializer, TagSerializer)
+from .paginators import PageLimitPagination
+from .serializers import IngredientSerializer, RecipeSerializer, TagSerializer
 from recipes.models import Ingredient, Recipe, Tag
 
 
@@ -11,14 +11,10 @@ class IngredientViewSet(viewsets.ModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    http_method_names = ['get', 'post', 'patch', 'delete']
     queryset = Recipe.objects.prefetch_related('tags', 'ingredients')
-
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-
-            return RecipeGETSerializer
-
-        return RecipeSerializer
+    serializer_class = RecipeSerializer
+    pagination_class = PageLimitPagination
 
 
 class TagViewSet(viewsets.ModelViewSet):
