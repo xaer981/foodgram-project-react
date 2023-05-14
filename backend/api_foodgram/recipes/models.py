@@ -1,8 +1,11 @@
+from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
 from .constants import HEX_COLOR_REGEX, STANDART_MAX_LENGTH, TEXT_LENGTH
 from core.models import NameOrderingStr
+
+User = get_user_model()
 
 
 class Tag(NameOrderingStr):
@@ -51,11 +54,13 @@ class Ingredient(NameOrderingStr):
 class Recipe(NameOrderingStr):
     """
     Модель рецептов.
-    Имеет поля ingredients(связь many-to-many к модели Ingredient),
+    Имеет поля name(название рецепта),
+    ingredients(связь many-to-many к модели Ingredient),
     tags(связь many-to-many к модели Tag),
     image(картинка к рецепту),
     text(описание рецепта),
     cooking_time(время приготовления, должно быть >= 1),
+    author(создатель рецепта, связь с моделью User),
     pub_date
     (время публикации рецепта, автоматически ставится текущее время и дата).
     """
@@ -73,6 +78,10 @@ class Recipe(NameOrderingStr):
     cooking_time = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1)],
         verbose_name='время приготовления в минутах')
+    author = models.ForeignKey(User,
+                               related_name='recipes',
+                               on_delete=models.CASCADE,
+                               verbose_name='автор')
     pub_date = models.DateTimeField(auto_now_add=True,
                                     verbose_name='дата публикации')
 
@@ -120,9 +129,11 @@ class RecipeTag(models.Model):
     tag(связь с моделью Tag).
     """
     recipe = models.ForeignKey(Recipe,
-                               on_delete=models.CASCADE)
+                               on_delete=models.CASCADE,
+                               verbose_name='рецепт')
     tag = models.ForeignKey(Tag,
-                            on_delete=models.CASCADE)
+                            on_delete=models.CASCADE,
+                            verbose_name='тэг')
 
     class Meta:
         constraints = [
@@ -133,3 +144,60 @@ class RecipeTag(models.Model):
     def __str__(self):
 
         return f'{self.recipe.name[:TEXT_LENGTH]} - {self.tag.name}'
+
+
+class Favorite(models.Model):
+    """
+    Модель избранного.
+    Имеет два поля: user(связь с моделью User),
+    recipe(связь с моделью Recipe).
+    """
+    user = models.ForeignKey(User,
+                             on_delete=models.CASCADE,
+                             related_name='favorites',
+                             verbose_name='пользователь')
+    recipe = models.ForeignKey(Recipe,
+                               on_delete=models.CASCADE,
+                               related_name='favorites',
+                               verbose_name='рецепт')
+
+    class Meta:
+        verbose_name = 'избранное'
+        verbose_name_plural = 'избранные'
+        constraints = [
+            models.UniqueConstraint(fields=('user', 'recipe'),
+                                    name='unique_favorite')
+        ]
+
+    def __str__(self):
+
+        return (f'{self.user.username} '
+                f'добавил в избранное рецепт "{self.recipe.name}"')
+
+
+class ShoppingCart(models.Model):
+    """
+    Модель корзины покупок.
+    Имеет два поля: user(связь с моделью User),
+    recipe(связь с моделью Recipe).
+    """
+    user = models.ForeignKey(User,
+                             on_delete=models.CASCADE,
+                             related_name='shopping_cart',
+                             verbose_name='пользователь')
+    recipe = models.ForeignKey(Recipe,
+                               on_delete=models.CASCADE,
+                               related_name='shopping_cart',
+                               verbose_name='рецепт')
+
+    class Meta:
+        verbose_name = 'корзина покупок'
+        verbose_name_plural = 'корзина покупок'
+        constraints = [
+            models.UniqueConstraint(fields=('user', 'recipe'),
+                                    name='unique_shopping_cart')
+        ]
+
+    def __str__(self):
+        return (f'{self.user.username} '
+                f'добавил в корзину покупок рецепт "{self.recipe.name}"')
