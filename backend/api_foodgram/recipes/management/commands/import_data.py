@@ -9,12 +9,12 @@ from recipes.models import Ingredient, MeasureUnit
 
 class Command(BaseCommand):
     """
-    Импортирует данные из CSV-таблицы в модель Ingredient,
+    Импортирует данные из json-объекта в модель Ingredient,
     а также создаёт объекты в MeasureUnit и связывает их.
     При обнаружении дубликата/некорректной записи(нет необходимых полей),
-    игнорирует конкретную запись и продолжает импорт дальше.
+    игнорирует конкретную запись и продолжает импорт дальше, печатая ошибку.
     """
-    help = 'Импортирует в проект необходимые данные из csv-таблиц.'
+    help = 'Импортирует в проект данные из json-объекта в модель Ingredient.'
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('table_name', nargs=1, type=pathlib.Path)

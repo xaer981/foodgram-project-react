@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.db import transaction
 from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
@@ -7,12 +6,17 @@ from rest_framework import serializers
 from .validators import ingredients_tags_in_recipe_validator
 from recipes.models import (Ingredient, MeasureUnit, Recipe, RecipeIngredient,
                             Tag)
+from users.models import CustomUser as User
 from users.models import Subscription
-
-User = get_user_model()
 
 
 class CustomUserSerializer(UserSerializer):
+    """
+    Кастомный сериализатор,
+    унаследованный от стандартного UserSerializer Djoser'а.
+    Дополнительно выводит поле с информацией
+    о наличии/отсутствии подписки на просматриваемого юзера.
+    """
     is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -34,6 +38,11 @@ class CustomUserSerializer(UserSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели Ingredient.
+    measurement_unit для вызванного ингредиента
+    получает из таблица MeasureUnit.
+    """
     measurement_unit = serializers.SlugRelatedField(
         slug_field='name',
         queryset=MeasureUnit.objects.all())
@@ -46,6 +55,11 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели Tag.
+    Проверяет цвет на соответствие HEX-коду.
+    Проверка цвета подтягивается из модели.
+    """
     class Meta:
         model = Tag
         fields = ('id',
@@ -55,6 +69,10 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели RecipeIngredient.
+    Берёт информацию из связанных таблицы Ingredient и MeasureUnit.
+    """
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
@@ -69,6 +87,12 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели Recipe.
+    Поле image преобразовывает полученный base64 в картинку.
+    Проверяет тэги и ингредиенты,
+    а также правильно создаёт/обновляет m2m связи объекта.
+    """
     image = Base64ImageField()
     tags = TagSerializer(read_only=True, many=True)
     ingredients = RecipeIngredientSerializer(
@@ -154,6 +178,10 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для краткого представления модели Recipe.
+    Используется в других сериализаторах.
+    """
     image = Base64ImageField()
 
     class Meta:
@@ -165,6 +193,13 @@ class RecipeShortSerializer(serializers.ModelSerializer):
 
 
 class SubscriptionSerializer(CustomUserSerializer):
+    """
+    Сериализатор Subsciption.
+    Подтягивает количество рецептов и сами рецепты юзера,
+    на которого подписались.
+    Проверяет, что подписка не была оформлена ранее
+    и не происходит подписка на себя же.
+    """
     recipes_count = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
 

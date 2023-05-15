@@ -5,6 +5,7 @@ from recipes.models import Ingredient, Recipe, Tag
 
 
 class IngredientFilter(SearchFilter):
+    """Фильтр поиска по полю name модели Ingredient."""
     search_param = 'name'
 
     class Meta:
@@ -13,6 +14,12 @@ class IngredientFilter(SearchFilter):
 
 
 class RecipeFilters(filters.FilterSet):
+    """
+    Фильтры для модели Recipe.
+    Фильтруется по:
+    - выбору из предустановленных поля tags,
+    - по булеву значению полей is_favorited и is_in_shopping_cart(1 или 0).
+    """
     tags = filters.ModelMultipleChoiceFilter(field_name='tags__slug',
                                              to_field_name='slug',
                                              queryset=Tag.objects.all())

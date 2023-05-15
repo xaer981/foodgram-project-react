@@ -11,7 +11,9 @@ User = get_user_model()
 class Tag(NameOrderingStr):
     """
     Модель тэгов.
-    Имеет поля name, color (проверяется regex на соответствие hex-color),
+    Имеет поля:
+    name,
+    color (проверяется regex на соответствие hex-color),
     slug.
     """
     color = models.CharField(unique=True,
@@ -37,7 +39,9 @@ class MeasureUnit(NameOrderingStr):
 class Ingredient(NameOrderingStr):
     """
     Модель ингредиентов.
-    Имеет поля name, measurement_unit(внешний ключ к таблице MeasureUnit).
+    Имеет поля:
+    name,
+    measurement_unit(внешний ключ к таблице MeasureUnit).
     При удалении единицы измерения, значение выставляется на null.
     """
     measurement_unit = models.ForeignKey(MeasureUnit,
@@ -54,7 +58,8 @@ class Ingredient(NameOrderingStr):
 class Recipe(NameOrderingStr):
     """
     Модель рецептов.
-    Имеет поля name(название рецепта),
+    Имеет поля:
+    name(название рецепта),
     ingredients(связь many-to-many к модели Ingredient),
     tags(связь many-to-many к модели Tag),
     image(картинка к рецепту),
@@ -94,7 +99,8 @@ class Recipe(NameOrderingStr):
 class RecipeIngredient(models.Model):
     """
     Промежуточная модель для связи рецептов и ингредиентов.
-    Имеет поле recipe(связь с моделью Recipe),
+    Имеет поля:
+    recipe(связь с моделью Recipe),
     ingredient(связь с моделью ingredient),
     amount(количество ингредиента для рецепта).
     """
@@ -109,6 +115,8 @@ class RecipeIngredient(models.Model):
         verbose_name='количество ингредиента')
 
     class Meta:
+        verbose_name = 'ингредиент в рецепте'
+        verbose_name_plural = 'ингредиенты в рецептах'
         constraints = [
             models.UniqueConstraint(fields=('recipe', 'ingredient'),
                                     name='unique_recipe_ingredient')
@@ -125,7 +133,8 @@ class RecipeIngredient(models.Model):
 class RecipeTag(models.Model):
     """
     Промежуточная модель для связи рецептов и тэгов.
-    Имеет поле recipe(связь с моделью Recipe),
+    Имеет поля:
+    recipe(связь с моделью Recipe),
     tag(связь с моделью Tag).
     """
     recipe = models.ForeignKey(Recipe,
@@ -136,6 +145,8 @@ class RecipeTag(models.Model):
                             verbose_name='тэг')
 
     class Meta:
+        verbose_name = 'тэг в рецепте'
+        verbose_name_plural = 'тэги в рецептах'
         constraints = [
             models.UniqueConstraint(fields=('recipe', 'tag'),
                                     name='unique_recipe_tag')
@@ -149,7 +160,8 @@ class RecipeTag(models.Model):
 class Favorite(models.Model):
     """
     Модель избранного.
-    Имеет два поля: user(связь с моделью User),
+    Имеет поля:
+    user(связь с моделью User),
     recipe(связь с моделью Recipe).
     """
     user = models.ForeignKey(User,
@@ -178,7 +190,8 @@ class Favorite(models.Model):
 class ShoppingCart(models.Model):
     """
     Модель корзины покупок.
-    Имеет два поля: user(связь с моделью User),
+    Имеет поля:
+    user(связь с моделью User),
     recipe(связь с моделью Recipe).
     """
     user = models.ForeignKey(User,

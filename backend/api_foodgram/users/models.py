@@ -6,6 +6,13 @@ from .constants import EMAIL_MAX_LENGTH, NAME_PASS_MAX_LENGTH, USERNAME_REGEX
 
 
 class CustomUser(AbstractUser):
+    """Кастомная модель пользователей.
+    Поля first_name и last_name - обязательны.
+    В качестве поля-юзернейма выбран email.
+    Все поля проверяются на максимальную длину (указана в константах).
+    Поля email и username должны быть уникальными.
+    Поле username дополнительно проверяется
+    на отсутствие недопустимых символов."""
     REQUIRED_FIELDS = ['username',
                        'first_name',
                        'last_name']
@@ -33,6 +40,10 @@ class CustomUser(AbstractUser):
 
 
 class Subscription(models.Model):
+    """Модель подписок.
+    user - тот, кто подписывается,
+    subscribing - тот, на кого подписываются.
+    Проверяется на уникальность пары подписчик/подписка."""
     user = models.ForeignKey(CustomUser,
                              on_delete=models.CASCADE,
                              related_name='subscriber')

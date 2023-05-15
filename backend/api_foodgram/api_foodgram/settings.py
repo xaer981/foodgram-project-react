@@ -7,11 +7,14 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-pid*u)2qb#!ec(wx6ljtbhft4)rl343l+m5fmze7c(2ol+=zx7'
+SECRET_KEY = os.getenv('SECRET_KEY', default='123')
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+]
 
 
 INSTALLED_APPS = [
@@ -113,6 +116,9 @@ DJOSER = {
     },
     'HIDE_USERS': False,
 }
+
+
+SILENCED_SYSTEM_CHECKS = ['rest_framework.W001']
 
 
 LANGUAGE_CODE = 'ru-RU'
