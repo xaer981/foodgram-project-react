@@ -14,8 +14,9 @@ from .constants import DATE_FORMAT
 from .filters import IngredientFilter, RecipeFilters
 from .paginators import PageLimitPagination
 from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
-from .serializers import (IngredientSerializer, RecipeSerializer,
-                          RecipeShortSerializer, SubscriptionSerializer,
+from .serializers import (FavoriteSerializer, IngredientSerializer,
+                          RecipeSerializer, RecipeShortSerializer,
+                          ShoppingCartSerializer, SubscriptionSerializer,
                           TagSerializer)
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
@@ -66,8 +67,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
             permission_classes=(IsAuthenticated,))
     def favorite(self, request, pk):
         if request.method == 'POST':
+            recipe = get_object_or_404(Recipe, pk=pk)
+            serializer = FavoriteSerializer(data={'user': request.user.pk,
+                                                  'recipe': recipe.pk})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
 
-            return self.add_to(Favorite, request.user, pk)
+            return Response(RecipeShortSerializer(recipe).data,
+                            status=status.HTTP_201_CREATED)
 
         return self.delete_from(Favorite, request.user, pk)
 
@@ -76,20 +83,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
             permission_classes=(IsAuthenticated,))
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
+            recipe = get_object_or_404(Recipe, pk=pk)
+            serializer = ShoppingCartSerializer(data={'user': request.user.pk,
+                                                      'recipe': recipe.pk})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
 
-            return self.add_to(ShoppingCart, request.user, pk)
+            return Response(RecipeShortSerializer(recipe).data,
+                            status=status.HTTP_201_CREATED)
 
         return self.delete_from(ShoppingCart, request.user, pk)
-
-    def add_to(self, model, user, pk):
-        if model.objects.filter(user=user, recipe__pk=pk).exists():
-            return Response({'errors': 'Нельзя добавит рецепт дважды'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        recipe = get_object_or_404(Recipe, pk=pk)
-        model.objects.create(user=user, recipe=recipe)
-        serializer = RecipeShortSerializer(recipe)
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete_from(self, model, user, pk):
         obj = model.objects.filter(user=user, recipe__pk=pk)
@@ -168,7 +171,6 @@ class CustomUserViewSet(UserViewSet):
             detail=True,
             permission_classes=(IsAuthenticated,))
     def subscribe(self, request, id):
-        user = request.user
         subscribing = get_object_or_404(User, pk=id)
 
         if request.method == 'POST':
@@ -176,24 +178,27 @@ class CustomUserViewSet(UserViewSet):
                                                 data=request.data,
                                                 context={'request': request})
             serializer.is_valid(raise_exception=True)
-            Subscription.objects.create(user=user, subscribing=subscribing)
+            Subscription.objects.create(user=request.user,
+                                        subscribing=subscribing)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        subscription = get_object_or_404(Subscription,
-                                         user=user,
-                                         subscribing=subscribing)
-        subscription.delete()
+        subscription = Subscription.objects.filter(user=request.user,
+                                                   subscribing=subscribing)
+        if subscription:
+            subscription.delete()
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response({'errors': 'Вы не были подписаны ранее!'},
+                        status=status.HTTP_400_BAD_REQUEST)
 
     @action(['get'],
             detail=False,
             permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
-        user = request.user
         queryset = User.objects.filter(
-            subscribing__user=user).prefetch_related('recipes')
+            subscribing__user=request.user).prefetch_related('recipes')
         pages = self.paginate_queryset(queryset)
         serializer = SubscriptionSerializer(pages,
                                             many=True,

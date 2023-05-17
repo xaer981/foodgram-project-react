@@ -2,9 +2,11 @@ from django.db import transaction
 from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from .validators import ingredients_tags_in_recipe_validator
-from recipes.models import (Ingredient, MeasureUnit, Recipe, RecipeIngredient,
+from recipes.models import (Favorite, Ingredient, MeasureUnit,
+                            Recipe, RecipeIngredient, ShoppingCart,
                             Tag)
 from users.models import CustomUser as User
 from users.models import Subscription
@@ -35,6 +37,28 @@ class CustomUserSerializer(UserSerializer):
             return False
 
         return Subscription.objects.filter(user=user, subscribing=obj).exists()
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+
+    class Meta:
+        model = Favorite
+        fields = ('user', 'recipe')
+        read_only_fields = ('user', 'recipe')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Favorite.objects.all(),
+                fields=('user', 'recipe'),
+                message='Нельзя добавить рецепт в избранное дважды!')
+        ]
+
+    def validate(self, data):
+        if data['user'] == data['recipe'].author:
+            raise serializers.ValidationError('Это ваш рецепт!')
+
+        return data
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -190,6 +214,23 @@ class RecipeShortSerializer(serializers.ModelSerializer):
                   'name',
                   'image',
                   'cooking_time')
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+
+    class Meta:
+        model = ShoppingCart
+        fields = ('user', 'recipe')
+        read_only_fields = ('user', 'recipe')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=ShoppingCart.objects.all(),
+                fields=('user', 'recipe'),
+                message='Нельзя добавить рецепт в корзину покупок дважды!'
+            )
+        ]
 
 
 class SubscriptionSerializer(CustomUserSerializer):
