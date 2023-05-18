@@ -39,7 +39,7 @@ jobs:
           script: cd projects && mkdir -p foodgram && mkdir -p foodgram/docs
       
       - name: Copy infra
-        uses: appleboy/scp-action@0.1.4
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
