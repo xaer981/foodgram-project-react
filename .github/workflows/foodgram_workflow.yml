@@ -22,47 +22,10 @@ jobs:
         run: |
           python -m flake8
 
-  copy_files_to_VM:
-    name: Copy docs&infra to server
-    runs-on: ubuntu-latest
-    needs: tests
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Create dir for project
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
-          script: cd projects && mkdir -p foodgram && mkdir -p foodgram/docs
-      
-      - name: Copy infra
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
-          source: "infra/"
-          target: /${{ secrets.USER }}/projects/foodgram/
-
-      - name: Copy docs
-        uses: garygrossgarten/github-action-scp@release
-        with:
-          local: docs/
-          remote: /${{ secrets.USER }}/projects/foodgram/docs/
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          privateKey: ${{ secrets.SSH_KEY }}
-
   build_and_push_backend_to_docker_hub:
     name: Build backend image and push it to DockerHub
     runs-on: ubuntu-latest
-    needs:
-      - tests
-      - copy_files_to_VM
+    needs: tests
     steps:
       - uses: actions/checkout@v2
 
@@ -85,9 +48,7 @@ jobs:
   build_and_push_frontend_to_docker_hub:
     name: Build frontend image and push it to DockerHub
     runs-on: ubuntu-latest
-    needs:
-      - tests
-      - copy_files_to_VM
+    needs: tests
     steps:
       - uses: actions/checkout@v2
 
@@ -110,7 +71,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs:
-      - copy_files_to_VM
       - build_and_push_backend_to_docker_hub
       - build_and_push_frontend_to_docker_hub
     steps:
