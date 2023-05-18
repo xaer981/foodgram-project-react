@@ -112,12 +112,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if not user.shopping_cart.exists():
             return Response({'errors': 'Ваша корзина покупок пуста.'},
                             status=status.HTTP_400_BAD_REQUEST)
-        ingredients = RecipeIngredient.objects.filter(
-            recipe__shopping_cart__user=request.user
-            ).values(
-                'ingredient__name',
-                'ingredient__measurement_unit__name'
-            ).annotate(amount=Sum('amount'))
+        ingredients = (RecipeIngredient.objects.filter(
+            recipe__shopping_cart__user=request.user)
+            .values('ingredient__name', 'ingredient__measurement_unit__name')
+            .annotate(amount=Sum('amount')))
         current_date = datetime.today().date().strftime(DATE_FORMAT)
         shopping_cart = [f'Корзина покупок для '
                          f'{user.get_full_name()} от {current_date}\n']

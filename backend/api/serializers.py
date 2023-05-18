@@ -5,9 +5,8 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from .validators import ingredients_tags_in_recipe_validator
-from recipes.models import (Favorite, Ingredient, MeasureUnit,
-                            Recipe, RecipeIngredient, ShoppingCart,
-                            Tag)
+from recipes.models import (Favorite, Ingredient, MeasureUnit, Recipe,
+                            RecipeIngredient, ShoppingCart, Tag)
 from users.models import CustomUser as User
 from users.models import Subscription
 
