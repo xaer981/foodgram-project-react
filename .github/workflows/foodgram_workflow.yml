@@ -105,7 +105,9 @@ jobs:
             cd projects/foodgram/
             sudo docker pull ${{ secrets.USER }}/foodgram_backend:latest
             sudo docker pull ${{ secrets.USER }}/foodgram_frontend:latest
-            echo DB_ENGINE=${{ secrets.DB_ENGINE }} > .env
+            echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} > .env
+            echo CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }} >> .env
+            echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
             echo DB_NAME=${{ secrets.DB_NAME }} >> .env
             echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
             echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env

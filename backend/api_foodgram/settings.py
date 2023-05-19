@@ -11,13 +11,12 @@ SECRET_KEY = os.getenv('SECRET_KEY', default='123')
 
 DEBUG = False
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '130.193.50.152',
-    'foodgram-xaer981.sytes.net',
-    'backend',
-]
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default='localhost 127.0.0.1').split(' ')
+
+
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://localhost http://127.0.0.1').split(' ')
 
 
 INSTALLED_APPS = [
