@@ -53,12 +53,6 @@ class FavoriteSerializer(serializers.ModelSerializer):
                 message='Нельзя добавить рецепт в избранное дважды!')
         ]
 
-    def validate(self, data):
-        if data['user'] == data['recipe'].author:
-            raise serializers.ValidationError('Это ваш рецепт!')
-
-        return data
-
 
 class IngredientSerializer(serializers.ModelSerializer):
     """
