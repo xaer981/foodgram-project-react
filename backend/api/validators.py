@@ -34,7 +34,7 @@ def ingredients_tags_in_recipe_validator(ingredients, tags):
 
         ingredients_list.append(ingredient)
 
-        if cur_ingredient.get('amount') <= 0:
+        if int(cur_ingredient.get('amount')) <= 0:
             raise serializers.ValidationError({'ingredients': (
                 f'Количество ингредиента c id {cur_ingredient["id"]} '
                 'не может быть меньше или равно 0.')})
