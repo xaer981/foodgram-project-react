@@ -210,6 +210,11 @@ class RecipeShortSerializer(serializers.ModelSerializer):
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор ShoppingCart.
+    Поля связаны через PK с User и Recipe.
+    Проверяет, что рецепт не добавляется в ShoppingCart дважды.
+    """
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
 
@@ -226,13 +231,11 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         ]
 
 
-class SubscriptionSerializer(CustomUserSerializer):
+class SubscriptionListSerializer(CustomUserSerializer):
     """
-    Сериализатор Subsciption.
+    Сериализатор представления Subsciption.
     Подтягивает количество рецептов и сами рецепты юзера,
     на которого подписались.
-    Проверяет, что подписка не была оформлена ранее
-    и не происходит подписка на себя же.
     """
     recipes_count = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
@@ -244,19 +247,6 @@ class SubscriptionSerializer(CustomUserSerializer):
                             'username',
                             'first_name',
                             'last_name')
-
-    def validate(self, data):
-        subscribing = self.instance
-        user = self.context.get('request').user
-        if Subscription.objects.filter(user=user,
-                                       subscribing=subscribing).exists():
-            raise serializers.ValidationError(
-                'Вы уже подписаны на этого пользователя.')
-
-        if user == subscribing:
-            raise serializers.ValidationError('Нельзя подписаться на себя.')
-
-        return data
 
     def get_recipes_count(self, obj):
 
@@ -271,3 +261,36 @@ class SubscriptionSerializer(CustomUserSerializer):
         serializer = RecipeShortSerializer(recipes, many=True, read_only=True)
 
         return serializer.data
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор записи Subscription.
+    Проверяет, что пользователь не был подписан ранее
+    и не подписывается на себя же.
+    При представлении возвращает SubscriptionListSerializer.
+    """
+
+    class Meta:
+        model = Subscription
+        fields = ('user', 'subscribing')
+        validators = [
+            UniqueTogetherValidator(queryset=Subscription.objects.all(),
+                                    fields=('user', 'subscribing'),
+                                    message='Вы уже подписаны!')
+        ]
+
+    def validate(self, data):
+        subscribing = data.get('subscribing')
+        user = self.context.get('request').user
+
+        if user == subscribing:
+            raise serializers.ValidationError('Нельзя подписаться на себя.')
+
+        return data
+
+    def to_representation(self, instance):
+
+        return SubscriptionListSerializer(
+            instance.subscribing,
+            context={'request': self.context.get('request')}).data

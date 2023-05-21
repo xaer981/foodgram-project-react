@@ -108,8 +108,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             detail=False,
             permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
-        user = request.user
-        if not user.shopping_cart.exists():
+        if not request.user.shopping_cart.exists():
             return Response({'errors': 'Ваша корзина покупок пуста.'},
                             status=status.HTTP_400_BAD_REQUEST)
         ingredients = (RecipeIngredient.objects.filter(
@@ -118,14 +117,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
             .annotate(amount=Sum('amount')))
         current_date = datetime.today().date().strftime(DATE_FORMAT)
         shopping_cart = [f'Корзина покупок для '
-                         f'{user.get_full_name()} от {current_date}\n']
+                         f'{request.user.get_full_name()} '
+                         f'от {current_date}\n']
         for ingredient in ingredients:
             shopping_cart.append(
                 f'- {ingredient["ingredient__name"]}: {ingredient["amount"]} '
                 f'{ingredient["ingredient__measurement_unit__name"]}')
         shopping_cart.append('\nКорзина собрана в FoodGram')
         shopping_cart = '\n'.join(shopping_cart)
-        file_name = f'{user.username}_shopping_cart.txt'
+        file_name = f'{request.user.username}_shopping_cart.txt'
         response = HttpResponse(shopping_cart, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename={file_name}'
 
@@ -172,18 +172,18 @@ class CustomUserViewSet(UserViewSet):
         subscribing = get_object_or_404(User, pk=id)
 
         if request.method == 'POST':
-            serializer = SubscriptionSerializer(subscribing,
-                                                data=request.data,
-                                                context={'request': request})
+            serializer = SubscriptionSerializer(
+                data={'user': request.user.pk,
+                      'subscribing': subscribing.pk},
+                context={'request': request})
             serializer.is_valid(raise_exception=True)
-            Subscription.objects.create(user=request.user,
-                                        subscribing=subscribing)
+            serializer.save()
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         subscription = Subscription.objects.filter(user=request.user,
                                                    subscribing=subscribing)
-        if subscription:
+        if subscription.exists():
             subscription.delete()
 
             return Response(status=status.HTTP_204_NO_CONTENT)
