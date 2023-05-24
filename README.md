@@ -1,12 +1,6 @@
 # FoodGram
 ![Forkflow status](https://github.com/xaer981/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)
 
-http://foodgram-xaer981.sytes.net
-
-## USERNAME AND PASSWORD FOR ADMIN:
-- email: ```ritis@barauskas.ru```
-- password: ```Ritis135531```
-
 # Данный проект позволяет Вам:
 - создавать рецепты
 - просматривать и сохранять рецепты других пользователей в избранное
