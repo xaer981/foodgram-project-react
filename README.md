@@ -16,13 +16,17 @@
 
 ### Процесс установки:
 - Скопируйте репозиторий ```git clone https://github.com/xaer981/foodgram-project-react.git```
-- Подключитесь к своему удалённому серверу ```ssh <username>@<ip>```
-- Обновите существующие пакеты ```sudo apt update && sudo apt upgrade -y```
-- Установите docker ```sudo apt install docker.io```
-- Установите docker-compose ```curl -SL https://github.com/docker/compose/releases/download/v2.18.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose```
-- Дайте нужные разрешения docker-compose ```sudo chmod +x /usr/local/bin/docker-compose```
-- Создайте нужные папки для проекта: ```mkdir -p projects/foodgram```
-- Создайте там .env файл с вашими данными ```touch .env```
+- <details>
+    <summary>Для запуска на удалённом сервере</summary>
+      <li>Подключитесь к своему удалённому серверу <code>ssh {username}@{ip}</code></li>
+      <li>Обновите существующие пакеты <code>sudo apt update && sudo apt upgrade -y</code></li>
+      <li>Установите docker <code>sudo apt install docker.io</code></li>
+      <li>Установите docker-compose <code>curl -SL https://github.com/docker/compose/releases/download/v2.18.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose</code></li>
+      <li>Дайте нужные разрешения docker-compose <code>sudo chmod +x /usr/local/bin/docker-compose</code></li>
+      <li>Создайте нужные папки для проекта: <code>mkdir -p projects/foodgram</code></li>
+      <li>Скопируйте себе содержимое папки infra <code>scp -r infra/* {username}@{ip}:/home/{username}/projects/foodgram/</code></li>
+  </details>
+- Создайте .env файл с вашими данными ```touch .env``` в папке infra/
 - Заполните его следующим образом:
 ```
 ALLOWED_HOSTS=<ip 1> <ip 2>
@@ -35,13 +39,15 @@ DB_HOST=localhost
 DB_PORT=5432
 SECRET_KEY=<your django secret token>
 ```
-- Скопируйте себе содержимое папки infra ```scp -r infra/* <usernamer>@<ip>:/home/<username>/projects/foodgram/```
+> [!NOTE]
+> Если у Вас Windows, выполняйте команды ниже без `sudo`.
 - Запустите проект ```sudo docker-compose up -d```
 - Выполните миграции ```sudo docker exec -it foodgram-backend python manage.py migrate```
 - Соберите статику ```sudo docker exec -it foodgram-backend python manage.py collectstatic --no-input```
 - Создайте суперпользователя ```sudo docker exec -it foodgram-backend python manage.py createsuperuser```
 
-### Поздравляем, Вы великолепны!
+### Поздравляем, Вы великолепны! 🏆
 
-
-@xaer981
+<p align=center>
+  <a href="url"><img src="https://github.com/xaer981/xaer981/blob/main/main_cat.gif" align="center" height="40" width="128"></a>
+</p>
