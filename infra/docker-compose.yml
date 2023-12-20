@@ -9,10 +9,12 @@ services:
 
   db:
     container_name: foodgram-db
-    image: postgres:13.0-alpine
+    image: postgres:15.0-alpine
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "${DB_PORT}:5432"
     env_file:
       - ./.env
 
